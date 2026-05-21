@@ -1,0 +1,19 @@
+<svg width="200" height="60" viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="xGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0071e3" />
+      <stop offset="100%" stop-color="#00c6ff" />
+    </linearGradient>
+  </defs>
+  <!-- Stylized X -->
+  <path d="M10 15L40 45" stroke="url(#xGradient)" stroke-width="12" stroke-linecap="round"/>
+  <path d="M40 15L10 45" stroke="url(#xGradient)" stroke-width="12" stroke-linecap="round"/>
+  
+  <!-- UNY Text -->
+  <text 
+    x="55" 
+    y="46" 
+    fill="currentColor" 
+    style="font-family: 'Inter', 'SF Pro Display', sans-serif; font-weight: 900; font-size: 44px; letter-spacing: -0.02em;"
+  >UNY</text>
+</svg>
