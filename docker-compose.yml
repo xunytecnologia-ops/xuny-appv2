@@ -1,0 +1,16 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: xuny-appv2
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      CLIENT_URL: ${CLIENT_URL}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+    volumes:
+      - ./server/.env:/app/server/.env:ro

@@ -29,11 +29,10 @@ import gmailRoutes from './routes/gmail.js';
 import driveRoutes from './routes/drive.js';
 import reminderRoutes from './routes/reminders.js';
 
-dotenv.config();
-
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 // 1. TOP-LEVEL DEBUG LOGGING
 app.use((req, res, next) => {
@@ -51,12 +50,23 @@ mongoose.connect(process.env.MONGODB_URI)
   });
 
 // Middleware
-const allowedOrigins = [
+const localOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
   'http://localhost:5175',
-  'http://localhost:5176'
+  'http://localhost:5176',
 ];
+
+const envOrigins = (process.env.CORS_ORIGINS || '')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+const allowedOrigins = [...new Set([...localOrigins, ...envOrigins, process.env.CLIENT_URL].filter(Boolean))];
+
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
 
 app.use(cors({
   origin: function (origin, callback) {
