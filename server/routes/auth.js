@@ -114,7 +114,17 @@ router.get('/user', (req, res) => {
 router.get('/logout', (req, res, next) => {
   req.logout((err) => {
     if (err) return next(err);
-    res.json({ message: 'Logged out' });
+    const done = () => {
+      res.clearCookie('connect.sid', { path: '/' });
+      res.json({ message: 'Logged out' });
+    };
+
+    if (req.session) {
+      req.session.destroy(() => done());
+      return;
+    }
+
+    done();
   });
 });
 

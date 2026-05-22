@@ -9,6 +9,7 @@ import cookieParser from 'cookie-parser';
 import dns from 'dns';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 const logFile = path.join(process.cwd(), 'debug.log');
 const log = (msg) => {
@@ -31,6 +32,8 @@ import reminderRoutes from './routes/reminders.js';
 dotenv.config();
 
 const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // 1. TOP-LEVEL DEBUG LOGGING
 app.use((req, res, next) => {
@@ -81,8 +84,9 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'secret_key',
   resave: false,
   saveUninitialized: false,
+  store: process.env.MONGODB_URI ? MongoStore.create({ mongoUrl: process.env.MONGODB_URI }) : undefined,
   cookie: {
-    secure: false, // Set to false for local testing
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
@@ -102,6 +106,15 @@ app.use('/api/reminders', reminderRoutes);
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
+
+if (process.env.NODE_ENV === 'production') {
+  const distPath = path.resolve(__dirname, '..', 'dist');
+  app.use(express.static(distPath));
+
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+}
 
 // Error handler
 app.use((err, req, res, next) => {
