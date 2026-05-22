@@ -5,6 +5,7 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BRANCH="${BRANCH:-main}"
 PM2_NAME="${PM2_NAME:-xuny-appv2-api}"
 API_PORT="${API_PORT:-5000}"
+NODE_ENV="${NODE_ENV:-production}"
 
 cd "$REPO_DIR"
 
@@ -52,9 +53,9 @@ if ! command -v pm2 >/dev/null 2>&1; then
 fi
 
 if pm2 describe "$PM2_NAME" >/dev/null 2>&1; then
-  pm2 restart "$PM2_NAME"
+  NODE_ENV="$NODE_ENV" PORT="$API_PORT" pm2 restart "$PM2_NAME" --update-env
 else
-  PORT="$API_PORT" pm2 start server/index.js --name "$PM2_NAME" --time
+  NODE_ENV="$NODE_ENV" PORT="$API_PORT" pm2 start server/index.js --name "$PM2_NAME" --time
 fi
 
 pm2 save
