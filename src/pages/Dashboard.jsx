@@ -35,6 +35,26 @@ const Dashboard = () => {
   const [recentActivities, setRecentActivities] = React.useState([]);
   const [todayReminders, setTodayReminders] = React.useState([]);
 
+  const firstName = React.useMemo(() => {
+    const name = user?.name?.trim();
+    if (!name) return '';
+    return name.split(/\s+/)[0] || '';
+  }, [user?.name]);
+
+  const getHeaderValue = (message, headerName) => {
+    const headers = message?.payload?.headers;
+    if (!Array.isArray(headers)) return null;
+    const found = headers.find((h) => h?.name === headerName);
+    return found?.value || null;
+  };
+
+  const formatReminderTime = (dueDate) => {
+    if (!dueDate) return null;
+    const date = new Date(dueDate);
+    if (Number.isNaN(date.getTime())) return null;
+    return format(date, 'HH:mm');
+  };
+
   const formatSize = (bytes) => {
     if (!bytes) return '0 GB';
     const gb = bytes / (1024 * 1024 * 1024);
@@ -63,13 +83,20 @@ const Dashboard = () => {
           space: quotaData ? formatSize(quotaData.usage) : '0 GB'
         });
 
-        if (emailsData?.messages) {
-          setRecentActivities(emailsData.messages.map(email => ({
-            id: email.id,
-            type: 'mail',
-            title: `Email de ${email.payload.headers.find(h => h.name === 'From')?.value || 'Desconhecido'}`,
-            time: 'Recente'
-          })));
+        if (Array.isArray(emailsData?.messages)) {
+          setRecentActivities(
+            emailsData.messages.map((email) => {
+              const from = getHeaderValue(email, 'From') || 'Desconhecido';
+              return {
+                id: email.id,
+                type: 'mail',
+                title: `Email de ${from}`,
+                time: 'Recente',
+              };
+            })
+          );
+        } else {
+          setRecentActivities([]);
         }
 
         if (Array.isArray(remindersData)) {
@@ -91,7 +118,7 @@ const Dashboard = () => {
   return (
     <div className="max-w-7xl mx-auto space-y-12 py-4">
       <div className="space-y-2">
-        <h2 className="text-4xl font-semibold tracking-tight">Olá, {user?.name.split(' ')[0]}.</h2>
+        <h2 className="text-4xl font-semibold tracking-tight">Olá{firstName ? `, ${firstName}` : ''}.</h2>
         <p className="text-[#86868b] text-lg font-medium">Tudo o que está acontecendo agora.</p>
       </div>
 
@@ -150,7 +177,7 @@ const Dashboard = () => {
                 <div key={reminder._id || i} className="p-6 rounded-3xl bg-white dark:bg-[#2d2d2f] border border-black/5 dark:border-white/5 shadow-sm transition-all hover:shadow-md cursor-pointer">
                   <p className="text-base font-semibold">{reminder.title || 'Reunião com cliente'}</p>
                   <p className="text-sm text-[#86868b] mt-2 font-medium">
-                    {reminder.dueDate ? format(new Date(reminder.dueDate), 'HH:mm') : '14:30'} • {reminder.description || 'Projeto X'}
+                    {formatReminderTime(reminder.dueDate) || '14:30'} • {reminder.description || 'Projeto X'}
                   </p>
                 </div>
               ))}
