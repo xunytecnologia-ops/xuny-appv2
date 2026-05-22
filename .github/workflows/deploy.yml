@@ -14,26 +14,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install and build
+      - name: Deploy
         env:
           PM2_NAME: ${{ secrets.PM2_NAME || 'xuny-appv2-api' }}
           API_PORT: ${{ secrets.API_PORT || '5000' }}
         run: |
-          set -euo pipefail
-
-          npm ci
-          npm run build
-
-          (cd server && npm ci)
-
-          if command -v pm2 >/dev/null 2>&1; then
-            if pm2 describe "$PM2_NAME" >/dev/null 2>&1; then
-              pm2 restart "$PM2_NAME"
-            else
-              PORT="$API_PORT" pm2 start server/index.js --name "$PM2_NAME" --time
-            fi
-            pm2 save
-          else
-            echo "pm2 não encontrado no servidor. Instale com: npm i -g pm2"
-            exit 1
-          fi
+          bash ./deploy.sh
